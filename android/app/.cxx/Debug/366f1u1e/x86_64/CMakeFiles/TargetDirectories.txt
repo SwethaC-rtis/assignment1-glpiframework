@@ -1,0 +1,3 @@
+C:/Users/sweth/OneDrive/Documents/Desktop/AndroidProgrammingQuiz-CrossPlatformCI/android/app/.cxx/Debug/366f1u1e/x86_64/CMakeFiles/glpiframeworkintro.dir
+C:/Users/sweth/OneDrive/Documents/Desktop/AndroidProgrammingQuiz-CrossPlatformCI/android/app/.cxx/Debug/366f1u1e/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/sweth/OneDrive/Documents/Desktop/AndroidProgrammingQuiz-CrossPlatformCI/android/app/.cxx/Debug/366f1u1e/x86_64/CMakeFiles/rebuild_cache.dir
