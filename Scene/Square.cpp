@@ -7,6 +7,39 @@
 #include "Square.h"
 #include <string>
 
+#ifdef PLATFORM_EMSCRIPTEN
+static const char* kVertexSrc =
+"#version 300 es\n"
+"layout(location = 0) in vec4 VertexPosition;\n"
+"layout(location = 1) in vec4 VertexColor;\n"
+"\n"
+"uniform float RadianAngle;\n"
+"\n"
+"out vec4 TriangleColor;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    float c = cos(RadianAngle);\n"
+"    float s = sin(RadianAngle);\n"
+"\n"
+"    vec2 rotated = mat2(c, s, -s, c) * VertexPosition.xy;\n"
+"    gl_Position   = vec4(rotated, 0.0, 1.0);\n"
+"    TriangleColor = VertexColor;\n"
+"}\n";
+
+static const char* kFragmentSrc =
+"#version 300 es\n"
+"precision mediump float;\n"
+"\n"
+"in vec4 TriangleColor;\n"
+"out vec4 FragColor;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    FragColor = TriangleColor;\n"
+"}\n";
+#endif
+
 // ---------------------------------------------------------------------------
 // Vertex data — a square offset to the right side of clip space so it
 // doesn't overlap the triangle, drawn as a GL_TRIANGLE_FAN (4 verts).
@@ -50,6 +83,8 @@ void Square::InitModel()
 
 #ifdef PLATFORM_ANDROID
     programID = ShaderHelper::buildProgramFromAssets(mgr, "shader/BlueTriangleVertex.glsl", "shader/BlueTriangleFragment.glsl");
+#elif defined(PLATFORM_EMSCRIPTEN)
+    programID = ShaderHelper::buildProgram(kVertexSrc, kFragmentSrc);
 #else
     programID = ShaderHelper::buildProgramFromFile("BlueTriangleVertex.glsl", "BlueTriangleFragment.glsl");
 #endif
