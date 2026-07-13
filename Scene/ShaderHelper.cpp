@@ -114,7 +114,12 @@ std::string ShaderHelper::loadFile(const char* filename)
         if (file.is_open()) {
             std::stringstream buffer;
             buffer << file.rdbuf();
-            return buffer.str();
+            std::string content = buffer.str();
+            LOGI("loadFile: OPENED '%s' size=%zu first30='%.30s'",
+                 path.c_str(), content.size(), content.c_str());
+            return content;
+        } else {
+            LOGI("loadFile: FAILED to open '%s'", path.c_str());
         }
     }
 
