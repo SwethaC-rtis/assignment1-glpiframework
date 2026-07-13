@@ -28,6 +28,7 @@
 #ifdef USE_GLFW
 
 static GLFWwindow* g_window = nullptr;
+static bool g_initialized = false;
 
 static void fbsize_cb(GLFWwindow* /*win*/, int w, int h)
 {
@@ -42,6 +43,19 @@ static void main_loop()
         glfwTerminate();
         return;
     }
+
+    // Deferred to the first actual frame, after Emscripten's preloaded
+    // filesystem (--preload-file) is guaranteed to be ready. Calling
+    // initializeRenderer() before emscripten_set_main_loop() starts can
+    // race the async file preload, causing shader loads to read garbage.
+    if (!g_initialized) {
+        Renderer::Instance().initializeRenderer();
+        int w, h;
+        glfwGetFramebufferSize(g_window, &w, &h);
+        Renderer::Instance().resize(w, h);
+        g_initialized = true;
+    }
+
     glfwPollEvents();
     Renderer::Instance().render();
     glfwSwapBuffers(g_window);
@@ -63,11 +77,6 @@ int main()
     glfwMakeContextCurrent(g_window);
     glfwSetFramebufferSizeCallback(g_window, fbsize_cb);
 
-    Renderer::Instance().initializeRenderer();
-    int w, h;
-    glfwGetFramebufferSize(g_window, &w, &h);
-    Renderer::Instance().resize(w, h);
-
     emscripten_set_main_loop(main_loop, 0, 1);
     return 0;
 }
@@ -79,6 +88,7 @@ int main()
 
 static SDL_Window*   g_window = nullptr;
 static SDL_GLContext g_glctx  = nullptr;
+static bool g_initialized = false;
 
 static void main_loop()
 {
@@ -87,6 +97,13 @@ static void main_loop()
         if (ev.type == SDL_QUIT)
             emscripten_cancel_main_loop();
     }
+
+    if (!g_initialized) {
+        Renderer::Instance().initializeRenderer();
+        Renderer::Instance().resize(800, 600);
+        g_initialized = true;
+    }
+
     Renderer::Instance().render();
     SDL_GL_SwapWindow(g_window);
 }
@@ -113,9 +130,6 @@ int main()
 
     g_glctx = SDL_GL_CreateContext(g_window);
     if (!g_glctx) { LOGE("SDL_GL_CreateContext failed: %s", SDL_GetError()); return -1; }
-
-    Renderer::Instance().initializeRenderer();
-    Renderer::Instance().resize(800, 600);
 
     emscripten_set_main_loop(main_loop, 0, 1);
     return 0;
